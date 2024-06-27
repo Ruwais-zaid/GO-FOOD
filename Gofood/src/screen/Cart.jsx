@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCart, useDispatch } from '../components/ContextReducer';
 import { MdDelete } from "react-icons/md";
+import {loadStripe} from '@stripe/stripe-js'
 
 const Cart = () => {
   const cartItems = useCart();
@@ -16,7 +17,34 @@ const Cart = () => {
   }
 
   const totalprice = cartItems.reduce((total, food) => total + food.price, 0);
-  console.log(totalprice)
+
+  const makePayment = async () => {
+    try {
+      const stripe = await loadStripe("pk_test_51PWC9M2LziqgFmouMXmpfXao6hHV89npIejImDkFckVNKJnH3cPhQA2GOacXKoZcWMUL75sGY8bLOuLfKhGyOKCh002jGruHmz");
+
+      const body = { products: cartItems };
+      const headers = { "Content-Type": "application/json" };
+
+      const response = await fetch("http://localhost:3000/api/create-checkout", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body)
+      });
+      console.log(response)
+
+      const session = await response.json();
+      // Redirect to Stripe checkout
+      const result = await stripe.redirectToCheckout({
+        sessionId: session.id
+      });
+
+      if (result.error) {
+        console.error('Error during checkout redirection:', result.error.message);
+      }
+    } catch (error) {
+      console.error('Error during makePayment:', error);
+    }
+  };
 
   return (
     <div className="   p-1/3 ">
@@ -49,7 +77,7 @@ const Cart = () => {
         </div>
         <div className="mt-8 flex justify-end items-center">
           <span className="text-2xl font-semibold mr-4">Total: RS {totalprice.toFixed(2)}</span>
-          <button className="bg-black text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+          <button className="bg-black text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200" onClick={makePayment}>
             Checkout
           </button>
         </div>

@@ -6,6 +6,7 @@ const fetchFoodItems = require('./fetchData');
 const userRoutes = require('./routes/createUser');
 const authRoutes = require('./routes/UserLogin');
 const dataRoutes = require('./routes/Displaydata')
+const checkoutRoutes = require('./routes/checkout')
 const cors = require('cors');
 
 const app = express();
@@ -25,6 +26,7 @@ connectToMongoDB()
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/',dataRoutes)
+app.use('/api/',checkoutRoutes)
 
 app.get('/', (req, res) => {
   res.send("Hello world");
